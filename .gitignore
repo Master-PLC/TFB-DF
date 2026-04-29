@@ -1,4 +1,9 @@
 dataset/
+!dataset/forecasting/ETTh1.csv
+!dataset/forecasting/ETTh2.csv
+!dataset/forecasting/ETTm1.csv
+!dataset/forecasting/ETTm2.csv
+
 result/
 .idea/
 .vscode/
