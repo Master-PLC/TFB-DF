@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 
 from ts_benchmark.utils.get_file_name import get_unique_file_suffix
 from ts_benchmark.report import report
-from ts_benchmark.common.constant import CONFIG_PATH, THIRD_PARTY_PATH
+from common.constant import CONFIG_PATH, THIRD_PARTY_PATH
 from ts_benchmark.pipeline import pipeline
 from ts_benchmark.utils.parallel import ParallelBackend
 

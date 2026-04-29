@@ -13,7 +13,7 @@ from darts import TimeSeries
 from sklearn.preprocessing import StandardScaler
 
 from ts_benchmark.baselines.utils import train_val_split
-from ts_benchmark.common.constant import ROOT_PATH
+from common.constant import ROOT_PATH
 from ts_benchmark.models import ModelBase
 
 if darts.__version__ >= "0.25.0":

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import abc
-from typing import Optional
 
 import pandas as pd
+from typing import Optional
 
 
 class DataPoolImpl(metaclass=abc.ABCMeta):

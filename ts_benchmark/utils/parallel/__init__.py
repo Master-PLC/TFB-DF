@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+import sys
+
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
 from typing import Optional, List, Callable, Tuple, NoReturn, Union
 
 from ts_benchmark.utils.design_pattern import Singleton

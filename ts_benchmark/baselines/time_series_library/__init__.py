@@ -37,9 +37,7 @@ from ts_benchmark.baselines.time_series_library.models.LightTS import LightTS
 from ts_benchmark.baselines.time_series_library.patchs.Linear import Linear
 from ts_benchmark.baselines.time_series_library.models.MICN import MICN
 from ts_benchmark.baselines.time_series_library.patchs.NLinear import NLinear
-from ts_benchmark.baselines.time_series_library.models.Nonstationary_Transformer import (
-    Nonstationary_Transformer,
-)
+from ts_benchmark.baselines.time_series_library.models.Nonstationary_Transformer import Nonstationary_Transformer
 from ts_benchmark.baselines.time_series_library.models.PatchTST import PatchTST
 from ts_benchmark.baselines.time_series_library.models.Pyraformer import Pyraformer
 from ts_benchmark.baselines.time_series_library.models.Reformer import Reformer

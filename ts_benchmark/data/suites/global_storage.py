@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
+import sys
+
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
 import importlib
 import logging
-from typing import NoReturn, Optional, Dict
 
 import pandas as pd
+from typing import NoReturn, Optional, Dict
 
 from ts_benchmark.data.data_server_base import DataServer
 from ts_benchmark.data.data_pool_impl_base import DataPoolImpl

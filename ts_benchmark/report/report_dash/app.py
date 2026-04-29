@@ -2,14 +2,14 @@
 
 from __future__ import absolute_import
 
-import logging
-from typing import Union, List, Dict, NoReturn
-
 import dash
-import dash_bootstrap_components as dbc
-import pandas as pd
+import logging
+
 from dash import html
+import dash_bootstrap_components as dbc
 from flask import Flask, redirect
+import pandas as pd
+from typing import Union, List, Dict, NoReturn
 
 from ts_benchmark.evaluation.strategy.constants import FieldNames
 from ts_benchmark.recording import load_record_data

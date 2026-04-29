@@ -2,8 +2,14 @@
 
 from __future__ import absolute_import
 
+import sys
+
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
 import os
 import warnings
+
 from typing import Tuple, Any, NoReturn, Callable, Optional, List, Dict
 
 from ts_benchmark.utils.parallel.base import TaskResult, SharedStorage

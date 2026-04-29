@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+import sys
+
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
 import itertools
 import logging
 import os
 import queue
-import sys
+import ray
 import threading
 import time
-from typing import Callable, Tuple, Any, List, NoReturn, Optional, Dict, Union
 
-import ray
 from ray import ObjectRef
 from ray.actor import ActorHandle
 from ray.exceptions import RayActorError
+from typing import Callable, Tuple, Any, List, NoReturn, Optional, Dict, Union
 
 from ts_benchmark.utils.parallel.base import TaskResult, SharedStorage
 

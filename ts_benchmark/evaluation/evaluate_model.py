@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
+import sys
+
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 import functools
 import json
 import logging
+import tqdm
 import traceback
-from typing import Callable, Tuple, List, Generator
 
 import pandas as pd
-import tqdm
+from typing import Callable, Tuple, List, Generator
 
 from ts_benchmark.evaluation.evaluator import Evaluator
 from ts_benchmark.evaluation.strategy import STRATEGY

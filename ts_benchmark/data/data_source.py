@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
+import sys
+
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
 import logging
 import os
+
 from concurrent.futures import ThreadPoolExecutor
+import pandas as pd
 from typing import Optional, Dict, NoReturn, List
 
-import pandas as pd
-
-from ts_benchmark.common.constant import FORECASTING_DATASET_PATH
+from common.constant import FORECASTING_DATASET_PATH
 from ts_benchmark.data.dataset import Dataset
 from ts_benchmark.data.utils import load_series_info, read_data
 
@@ -160,5 +165,5 @@ class LocalForecastingDataSource(LocalDataSource):
     The local data source of the forecasting task
     """
 
-    def __init__(self):
-        super().__init__(FORECASTING_DATASET_PATH, "FORECAST_META.csv")
+    def __init__(self, forecasting_dataset_path: str):
+        super().__init__(forecasting_dataset_path, "FORECAST_META.csv")

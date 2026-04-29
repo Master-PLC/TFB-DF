@@ -1,8 +1,11 @@
-from typing import Type, Dict
+import sys
+
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 import torch
-import torch.nn as nn
-from torch import optim
+
+from typing import Type, Dict
 
 from ts_benchmark.baselines.deep_forecasting_model_base import DeepForecastingModelBase
 
@@ -50,7 +53,7 @@ MODEL_HYPER_PARAMS = {
     "decomp_method": "moving_avg",
     "use_norm": True,
     "parallel_strategy": "DP",
-    "task_name": "short_term_forecast",
+    "task_name": "long_term_forecast",
 }
 
 

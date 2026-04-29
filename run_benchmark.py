@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
+import sys
+
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 import argparse
 import json
 import logging
 import os
-import sys
+import torch
 import warnings
+
 from typing import Dict, NoReturn
 
-import torch
-import numpy as np
-
-sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
-
+from common.constant import CONFIG_PATH, FORECASTING_DATASET_PATH, THIRD_PARTY_PATH
 from ts_benchmark.utils.get_file_name import get_unique_file_suffix
 from ts_benchmark.report import report
-from ts_benchmark.common.constant import CONFIG_PATH, THIRD_PARTY_PATH
 from ts_benchmark.pipeline import pipeline
 from ts_benchmark.utils.parallel import ParallelBackend
-
 
 sys.path.insert(0, THIRD_PARTY_PATH)
 
@@ -41,6 +41,8 @@ def build_data_config(args: argparse.Namespace, config_data: Dict) -> Dict:
     Builds the data loader config from commandline arguments and configuration dict
     """
     data_config = config_data["data_config"]
+    if args.data_root is not None:
+        data_config["data_root"] = args.data_root
     data_config["data_name_list"] = args.data_name_list
     if args.data_set_name is not None:
         data_config["data_set_name"] = args.data_set_name
@@ -140,167 +142,40 @@ def init_worker(env: Dict) -> NoReturn:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="run_benchmark",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
+    parser = argparse.ArgumentParser(description="run_benchmark", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # script name
-    parser.add_argument(
-        "--config-path",
-        type=str,
-        required=True,
-        help="Evaluation config file path",
-    )
+    parser.add_argument("--config_path", type=str, required=True, help="Evaluation config file path")
 
-    parser.add_argument(
-        "--data-name-list",
-        type=str,
-        nargs="+",
-        default=None,
-        help="List of series names entered by the user",
-    )
-
-    parser.add_argument(
-        "--data-set-name",
-        type=str,
-        nargs="+",
-        default=None,
-        help="List of dataset name names entered by the user,"
-        "only takes effect when data_name_list is not specified",
-    )
+    # data_config
+    parser.add_argument("--data_root", type=str, default=FORECASTING_DATASET_PATH, help="The root path of the dataset")
+    parser.add_argument("--data_name_list", type=str, nargs="+", default=None, help="List of series names entered by the user")
+    parser.add_argument("--data_set_name", type=str, nargs="+", default=None, help="List of dataset name names entered by the user, only takes effect when data_name_list is not specified")
 
     # model_config
-    parser.add_argument(
-        "--adapter",
-        type=str,
-        nargs="+",
-        default=None,
-        help="Adapter used to adapt the method to our pipeline",
-    )
-
-    parser.add_argument(
-        "--model-name",
-        type=str,
-        nargs="+",
-        required=True,
-        help="The relative path of the model that needs to be evaluated",
-    )
-    parser.add_argument(
-        "--model-hyper-params",
-        type=str,
-        nargs="+",
-        default=None,
-        help=(
-            "The input parameters corresponding to the models to be evaluated "
-            "should correspond one-to-one with the --model-name options."
-        ),
-    )
+    parser.add_argument("--adapter", type=str, nargs="+", default=None, help="Adapter used to adapt the method to our pipeline")
+    parser.add_argument("--model_name", type=str, nargs="+", required=True, help="The relative path of the model that needs to be evaluated")
+    parser.add_argument("--model_hyper_params", type=str, nargs="+", default=None, help="The input parameters corresponding to the models to be evaluated should correspond one-to-one with the --model_name options.")
 
     # evaluation_config
-    parser.add_argument(
-        "--metrics",
-        type=str,
-        nargs="+",
-        default=None,
-        help="Evaluation metrics that need to be calculated",
-    )
-    parser.add_argument(
-        "--strategy-args",
-        type=str,
-        default=None,
-        help="Parameters required for evaluating strategies",
-    )
-    parser.add_argument(
-        "--seed",
-        type=int,
-        default=None,
-        help="Random seed that is set before evaluating any model-series pair, "
-        "by default, use the seed value in the config file",
-    )
-    parser.add_argument(
-        "--deterministic",
-        type=str,
-        default="efficient",
-        choices=["full", "efficient", "none"],
-        help="Specify the type of deterministic behavior for the algorithm. Options are: "
-        "'full': Enables full deterministic mode. "
-        "'efficient': Fixes only some seeds for efficiency. "
-        "'none': No deterministic behavior is applied.",
-    )
+    parser.add_argument("--metrics", type=str, nargs="+", default=None, help="Evaluation metrics that need to be calculated")
+    parser.add_argument("--strategy_args", type=str, default=None, help="Parameters required for evaluating strategies")
+    parser.add_argument("--seed", type=int, default=None, help="Random seed that is set before evaluating any model-series pair, by default, use the seed value in the config file")
+    parser.add_argument("--deterministic", type=str, default="efficient", choices=["full", "efficient", "none"], help="Specify the type of deterministic behavior for the algorithm. Options are: 'full': Enables full deterministic mode. 'efficient': Fixes only some seeds for efficiency. 'none': No deterministic behavior is applied.")
 
     # evaluation engine
-    parser.add_argument(
-        "--eval-backend",
-        type=str,
-        default="sequential",
-        choices=["sequential", "ray"],
-        help="Evaluation backend, use ray for parallel evaluation",
-    )
-    parser.add_argument(
-        "--num-cpus",
-        type=int,
-        default=os.cpu_count(),
-        help="Number of cpus to use, only available in both backends",
-    )
-    parser.add_argument(
-        "--gpus",
-        type=int,
-        nargs="+",
-        default=None,
-        help="List of gpu devices to use, only available in ray backends",
-    )
-    parser.add_argument(
-        "--num-workers",
-        type=int,
-        default=os.cpu_count(),
-        help="Number of evaluation workers",
-    )
+    parser.add_argument("--eval_backend", type=str, default="sequential", choices=["sequential", "ray"], help="Evaluation backend, use ray for parallel evaluation")
+    parser.add_argument("--num_cpus", type=int, default=os.cpu_count(), help="Number of cpus to use, only available in both backends")
+    parser.add_argument("--gpus", type=int, nargs="+", default=None, help="List of gpu devices to use, only available in ray backends")
+    parser.add_argument("--num_workers", type=int, default=os.cpu_count(), help="Number of evaluation workers")
     # TODO: should timeout be part of the configuration file?
-    parser.add_argument(
-        "--timeout",
-        type=float,
-        default=600,
-        help="Time limit for each evaluation task, in seconds",
-    )
-    parser.add_argument(
-        "--max-tasks-per-child",
-        type=int,
-        default=100,
-        help="Max tasks to run on a single worker when using parallel backends",
-    )
+    parser.add_argument("--timeout", type=float, default=60000, help="Time limit for each evaluation task, in seconds")
+    parser.add_argument("--max_tasks_per_child", type=int, default=100, help="Max tasks to run on a single worker when using parallel backends")
 
     # report_config
-    parser.add_argument(
-        "--aggregate_type",
-        default="mean",
-        help="Select the baseline algorithm to compare",
-    )
-
-    parser.add_argument(
-        "--report-method",
-        type=str,
-        default="csv",
-        choices=[
-            "dash",
-            "csv",
-        ],
-        help="Presentation form of algorithm performance comparison results",
-    )
-
-    parser.add_argument(
-        "--save-path",
-        type=str,
-        default=None,
-        help="The relative path for saving evaluation results, relative to the result folder",
-    )
-
-    parser.add_argument(
-        "--save-true-pred",
-        type=str_to_bool,
-        default=None,
-        help="If true, saves the model's prediction results "
-        "and the true values in evaluation result file",
-    )
+    parser.add_argument("--aggregate_type", default="mean", help="Select the baseline algorithm to compare")
+    parser.add_argument("--report_method", type=str, default="csv", choices=["dash", "csv", "yaml"], help="Presentation form of algorithm performance comparison results")
+    parser.add_argument("--save_path", type=str, default=None, help="The relative path for saving evaluation results, relative to the result folder")
+    parser.add_argument("--save_true_pred", type=str_to_bool, default=None, help="If true, saves the model's prediction results and the true values in evaluation result file")
 
     args = parser.parse_args()
 
@@ -350,8 +225,8 @@ if __name__ == "__main__":
         ParallelBackend().close(force=True)
 
     report_config["log_files_list"] = log_filenames
-    if args.report_method == "csv":
-        filename = get_unique_file_suffix()
+    if args.report_method in ["csv", "yaml"]:
+        filename = get_unique_file_suffix(suffix=args.report_method)
         leaderboard_file_name = "test_report" + filename
         report_config["leaderboard_file_name"] = leaderboard_file_name
     report(report_config, report_method=args.report_method)

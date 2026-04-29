@@ -4,6 +4,7 @@ import os
 from typing import Union, List
 
 import pandas as pd
+import yaml
 
 from common.constant import ROOT_PATH
 from ts_benchmark.evaluation.strategy.constants import FieldNames
@@ -19,25 +20,25 @@ ARTIFACT_COLUMNS = [
 ]
 
 
-# TODO: update the docstring to match the common format in OTB.
 def report(report_config: dict) -> None:
     """
-    Generate a report based on specified configuration parameters.
+    Generate a YAML report based on specified configuration parameters.
 
     Parameters:
     - report_config (dict): A dictionary containing the following keys and their respective values:
         - log_files_list (List[str]): A list of file paths for log files.
-        - leaderboard_file_name (str): The name for the saved report file.
+        - leaderboard_file_name (str): The name for the saved report file (without extension,
+          or with .yaml / .yml extension).
         - aggregate_type (str): The aggregation type used when reporting the final results of evaluation metrics.
         - report_metrics (Union[str, List[str]]): The metrics for the report, can be a string or a list of strings.
         - fill_type (str): The type of fill for missing values.
         - null_value_threshold (float): The threshold value for null metrics.
 
     Raises:
-    - ValueError: If all metrics have too many null values, making performance comparison impossible.
+    - ValueError: If no log files are provided.
 
     Returns:
-    - None: The function does not return a value, but generates and saves a report to a CSV file.
+    - None: The function does not return a value, but generates and saves a report to a YAML file.
     """
     log_files: Union[List[str], pd.DataFrame] = report_config.get("log_files_list")
     if not log_files:
@@ -60,17 +61,23 @@ def report(report_config: dict) -> None:
     num_rows = leaderboard_df.shape[0]
     leaderboard_df.insert(0, "strategy_args", [log_data.iloc[0, 1]] * num_rows)
 
-    # Create final DataFrame and save to CSV
+    # Convert DataFrame to a list of dicts for YAML serialization
+    records = leaderboard_df.to_dict(orient="records")
+    # Replace NaN with None so yaml dumps null instead of .nan
+    yaml_data = [
+        {k: (None if isinstance(v, float) and pd.isna(v) else v) for k, v in row.items()}
+        for row in records
+    ]
+
+    # Ensure the file name ends with .yaml
+    file_name = report_config["leaderboard_file_name"]
+
+    # Save to YAML file
     if report_config.get("save_path", None) is not None:
         save_path = report_config.get("save_path", None)
-        leaderboard_df.to_csv(
-            os.path.join(
-                save_path, report_config["leaderboard_file_name"]
-            ),
-            index=False,
-        )
+        output_path = os.path.join(save_path, file_name)
     else:
-        leaderboard_df.to_csv(
-            os.path.join(ROOT_PATH, "result", report_config["leaderboard_file_name"]),
-            index=False,
-        )
+        output_path = os.path.join(ROOT_PATH, "result", file_name)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        yaml.dump(yaml_data, f, allow_unicode=True, sort_keys=False, default_flow_style=False)

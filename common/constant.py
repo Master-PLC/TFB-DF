@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
 
+from pathlib import Path
+
 # Get the root path where the code file is located
-ROOT_PATH = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
+ROOT_PATH = str(Path(__file__).resolve().parents[1])
 
 # Build the path to the dataset folder
 FORECASTING_DATASET_PATH = os.path.join(ROOT_PATH, "dataset", "forecasting")

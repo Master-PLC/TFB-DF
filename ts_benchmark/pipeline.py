@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
+import sys
+
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from dataclasses import dataclass
 from functools import reduce
+import pandas as pd
 from operator import and_
 from typing import List, Dict, Type, Optional
 
-import pandas as pd
-
-from ts_benchmark.data.data_source import (
-    LocalForecastingDataSource,
-    DataSource,
-)
+from common.constant import FORECASTING_DATASET_PATH
+from ts_benchmark.data.data_source import LocalForecastingDataSource, DataSource
 from ts_benchmark.data.suites.global_storage import GlobalStorageDataServer
 from ts_benchmark.evaluation.evaluate_model import eval_model
 from ts_benchmark.models import get_models
@@ -116,7 +118,7 @@ def pipeline(
     ):
         raise ValueError("Not supporting different types of data sources.")
 
-    data_src: DataSource = PREDEFINED_DATASETS[dataset_name_list[0]].datasrc_class()
+    data_src: DataSource = PREDEFINED_DATASETS[dataset_name_list[0]].datasrc_class(data_config.get("data_root", FORECASTING_DATASET_PATH))
     data_name_list = data_config.get("data_name_list", None)
     if not data_name_list:
         data_name_list = []

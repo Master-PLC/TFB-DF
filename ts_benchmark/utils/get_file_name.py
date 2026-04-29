@@ -4,7 +4,7 @@ import socket
 import time
 
 
-def get_unique_file_suffix():
+def get_unique_file_suffix(suffix="csv"):
     """
     Generate a log file name suffix that includes the following information:
 
@@ -28,5 +28,5 @@ def get_unique_file_suffix():
     pid = os.getpid()
 
     # Build file name
-    log_filename = f".{timestamp}.{hostname}.{pid}.csv"
+    log_filename = f".{timestamp}.{hostname}.{pid}.{suffix}"
     return log_filename
