@@ -3,6 +3,7 @@ dataset/
 !dataset/forecasting/ETTh2.csv
 !dataset/forecasting/ETTm1.csv
 !dataset/forecasting/ETTm2.csv
+!dataset/forecasting/FORECAST_META.csv
 
 result/
 .idea/
