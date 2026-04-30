@@ -36,6 +36,12 @@ DEFAULT_HYPER_PARAMS = {
     "adj_lr_in_epoch": True,
     "adj_lr_in_batch": False,
     "parallel_strategy": None,
+    "rec_lambda": 1.0,
+    "auxi_lambda": 0.0,
+    "auxi_mode": "none",
+    "auxi_loss": "MAE",
+    "auxi_type": "complex",
+    "module_first": True
 }
 
 
@@ -137,6 +143,62 @@ class DeepForecastingModelBase(ModelBase):
 
         optimizer = optim.Adam(self.model.parameters(), lr=self.config.lr)
         return criterion, optimizer
+
+    def _compute_auxi_loss(self, outputs: torch.Tensor, batch_y: torch.Tensor) -> torch.Tensor:
+        """
+        Compute auxiliary loss in the frequency/spectral domain.
+        Supports various transform modes: fft, rfft, rfft-D, rfft-2D, legendre, chebyshev, hermite, laguerre.
+
+        The auxiliary loss encourages the model to match the ground truth in a transformed space
+        (e.g., frequency domain), complementing the main time-domain reconstruction loss.
+
+        :param outputs: Model predictions, shape [B, horizon, D].
+        :param batch_y: Ground truth, shape [B, horizon, D].
+        :return: Scalar auxiliary loss tensor.
+        """
+        if not hasattr(self.config, "auxi_mode") or self.config.auxi_mode == "none":
+            return torch.tensor(0.0, device=outputs.device)
+
+        mode = self.config.auxi_mode
+
+        if mode == "fft":
+            diff = torch.fft.fft(outputs, dim=1) - torch.fft.fft(batch_y, dim=1)
+
+        elif mode == "rfft":
+            diff = torch.fft.rfft(outputs, dim=1) - torch.fft.rfft(batch_y, dim=1)
+            auxi_type = getattr(self.config, "auxi_type", "complex")
+            if auxi_type == "complex-phase":
+                diff = diff.angle()
+            elif auxi_type == "mag":
+                diff = torch.fft.rfft(outputs, dim=1).abs() - torch.fft.rfft(batch_y, dim=1).abs()
+            elif auxi_type == "phase":
+                diff = torch.fft.rfft(outputs, dim=1).angle() - torch.fft.rfft(batch_y, dim=1).angle()
+            elif auxi_type == "mag-phase":
+                diff_mag = torch.fft.rfft(outputs, dim=1).abs() - torch.fft.rfft(batch_y, dim=1).abs()
+                diff_phase = torch.fft.rfft(outputs, dim=1).angle() - torch.fft.rfft(batch_y, dim=1).angle()
+                diff = torch.stack([diff_mag, diff_phase])
+            # "complex" (default): use raw complex difference
+
+        elif mode == "rfft-D":
+            diff = torch.fft.rfft(outputs, dim=-1) - torch.fft.rfft(batch_y, dim=-1)
+
+        elif mode == "rfft-2D":
+            diff = torch.fft.rfft2(outputs) - torch.fft.rfft2(batch_y)
+
+        else:
+            raise ValueError(f"Unknown auxi_mode: {mode}")
+
+        # Compute scalar loss from the difference tensor
+        auxi_loss_fn = getattr(self.config, "auxi_loss", "MSE")
+        module_first = getattr(self.config, "module_first", True)
+        if auxi_loss_fn == "MAE":
+            loss_auxi = diff.abs().mean() if module_first else diff.mean().abs()
+        elif auxi_loss_fn == "MSE":
+            loss_auxi = (diff.abs() ** 2).mean() if module_first else (diff ** 2).mean().abs()
+        else:
+            raise ValueError(f"Unknown auxi_loss: {auxi_loss_fn}")
+
+        return loss_auxi
 
     def _process(self, input, target, input_mark, target_mark):
         """
@@ -472,9 +534,24 @@ class DeepForecastingModelBase(ModelBase):
                 target = target[:, -config.horizon :, :series_dim]
                 output = output[:, -config.horizon :, :series_dim]
                 output, target = self._post_process(output, target)
-                loss = criterion(output, target)
 
-                total_loss = loss + additional_loss
+                total_loss = torch.tensor(0.0, device=output.device)
+
+                # Main reconstruction loss
+                # Apply reconstruction loss with lambda weight
+                rec_lambda = getattr(config, "rec_lambda", 1.0)
+                if rec_lambda > 0:
+                    loss_rec = criterion(output, target)
+                    total_loss += rec_lambda * loss_rec
+
+                # Compute and apply auxiliary loss with lambda weight
+                auxi_lambda = getattr(config, "auxi_lambda", 0.0)
+                if auxi_lambda > 0:
+                    loss_auxi = self._compute_auxi_loss(output, target)
+                    total_loss += auxi_lambda * loss_auxi
+
+                # Include any additional loss from _process
+                total_loss += additional_loss
 
                 if config.use_amp == 1:
                     scaler.scale(total_loss).backward()
