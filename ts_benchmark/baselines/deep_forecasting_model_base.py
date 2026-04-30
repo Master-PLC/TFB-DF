@@ -58,9 +58,6 @@ class Config:
             setattr(self, key, value)
 
         if hasattr(self, "horizon"):
-            logger.warning(
-                "The model parameter horizon is deprecated. Please use pred_len."
-            )
             setattr(self, "pred_len", self.horizon)
 
 
