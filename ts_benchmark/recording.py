@@ -129,7 +129,7 @@ def find_record_files(directory: str) -> List[str]:
 
 
 def save_log(
-    result_df: pd.DataFrame, save_path, file_prefix: str, compress_method: str = "gz"
+    result_df: pd.DataFrame, save_path, file_prefix: str, compress_method: str = "gz", simpler_save_name: bool = True
 ) -> str:
     """
     Save log data.
@@ -157,7 +157,7 @@ def save_log(
         result_path = os.path.join(ROOT_PATH, "result")
     os.makedirs(result_path, exist_ok=True)
 
-    record_filename = file_prefix + get_unique_file_suffix()
+    record_filename = file_prefix + get_unique_file_suffix(suffix='csv') if not simpler_save_name else "logging.csv"
     file_path = os.path.join(result_path, record_filename)
 
     return write_record_file(result_df, file_path, compress_method)

@@ -90,6 +90,7 @@ def pipeline(
     data_config: dict,
     model_config: dict,
     evaluation_config: dict,
+    report_config: dict,
 ) -> List[str]:
     """
     Execute the benchmark pipeline process
@@ -161,6 +162,7 @@ def pipeline(
                     result_df,
                     evaluation_config["save_path"],
                     model_save_name if i == 0 else f"{model_save_name}-{i}",
+                    simpler_save_name=report_config.get("simpler_save_name", True),
                 )
             )
 

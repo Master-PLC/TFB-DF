@@ -129,6 +129,7 @@ def build_report_config(args: argparse.Namespace, config_data: Dict) -> Dict:
     report_config = config_data["report_config"]
     report_config["aggregate_type"] = args.aggregate_type
     report_config["save_path"] = args.save_path
+    report_config["simpler_save_name"] = args.simpler_save_name
 
     return report_config
 
@@ -175,6 +176,7 @@ if __name__ == "__main__":
     parser.add_argument("--aggregate_type", default="mean", help="Select the baseline algorithm to compare")
     parser.add_argument("--report_method", type=str, default="csv", choices=["dash", "csv", "yaml"], help="Presentation form of algorithm performance comparison results")
     parser.add_argument("--save_path", type=str, default=None, help="The relative path for saving evaluation results, relative to the result folder")
+    parser.add_argument("--simpler_save_name", type=str_to_bool, default=True, help="Whether to use simple name for the saved files, which is more human-readable but less informative.")
     parser.add_argument("--save_true_pred", type=str_to_bool, default=None, help="If true, saves the model's prediction results and the true values in evaluation result file")
 
     args = parser.parse_args()
@@ -219,6 +221,7 @@ if __name__ == "__main__":
             data_config,
             model_config,
             evaluation_config,
+            report_config
         )
 
     finally:
@@ -227,6 +230,6 @@ if __name__ == "__main__":
     report_config["log_files_list"] = log_filenames
     if args.report_method in ["csv", "yaml"]:
         filename = get_unique_file_suffix(suffix=args.report_method)
-        leaderboard_file_name = "test_report" + filename
+        leaderboard_file_name = f"test_report{filename}" if not args.simpler_save_name else f"performance.{args.report_method}"
         report_config["leaderboard_file_name"] = leaderboard_file_name
     report(report_config, report_method=args.report_method)
