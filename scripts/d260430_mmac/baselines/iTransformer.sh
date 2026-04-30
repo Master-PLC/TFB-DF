@@ -65,7 +65,7 @@ for pl in ${pl_list[@]}; do
     if [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}/*"
     else
-        if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -96,6 +96,7 @@ for pl in ${pl_list[@]}; do
             --num_workers 1 \
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
+            --simpler_save_name true \
             --save_true_pred false
 
         sleep 5
@@ -138,7 +139,7 @@ for pl in ${pl_list[@]}; do
     if [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}/*"
     else
-        if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -169,6 +170,7 @@ for pl in ${pl_list[@]}; do
             --num_workers 1 \
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
+            --simpler_save_name true \
             --save_true_pred false
 
         sleep 5
@@ -213,7 +215,7 @@ for pl in ${pl_list[@]}; do
     if [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}/*"
     else
-        if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -244,6 +246,7 @@ for pl in ${pl_list[@]}; do
             --num_workers 1 \
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
+            --simpler_save_name true \
             --save_true_pred false
 
         sleep 5
@@ -288,7 +291,7 @@ for pl in ${pl_list[@]}; do
     if [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}/*"
     else
-        if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -319,6 +322,7 @@ for pl in ${pl_list[@]}; do
             --num_workers 1 \
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
+            --simpler_save_name true \
             --save_true_pred false
 
         sleep 5
@@ -362,7 +366,7 @@ for pl in ${pl_list[@]}; do
     if [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}/*"
     else
-        if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -393,6 +397,7 @@ for pl in ${pl_list[@]}; do
             --num_workers 1 \
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
+            --simpler_save_name true \
             --save_true_pred false
 
         sleep 5
@@ -435,7 +440,7 @@ for pl in ${pl_list[@]}; do
     if [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}/*"
     else
-        if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -466,6 +471,7 @@ for pl in ${pl_list[@]}; do
             --num_workers 1 \
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
+            --simpler_save_name true \
             --save_true_pred false
 
         sleep 5
@@ -509,7 +515,7 @@ for pl in ${pl_list[@]}; do
     if [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}/*"
     else
-        if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -540,6 +546,7 @@ for pl in ${pl_list[@]}; do
             --num_workers 1 \
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
+            --simpler_save_name true \
             --save_true_pred false
 
         sleep 5
@@ -583,7 +590,7 @@ for pl in ${pl_list[@]}; do
     if [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}/*"
     else
-        if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -614,6 +621,7 @@ for pl in ${pl_list[@]}; do
             --num_workers 1 \
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
+            --simpler_save_name true \
             --save_true_pred false
 
         sleep 5
@@ -659,7 +667,7 @@ for pl in ${pl_list[@]}; do
     if [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}/*"
     else
-        if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -690,6 +698,7 @@ for pl in ${pl_list[@]}; do
             --num_workers 1 \
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
+            --simpler_save_name true \
             --save_true_pred false
 
         sleep 5
