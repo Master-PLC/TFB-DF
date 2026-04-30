@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import os
 from typing import Union, List
 
@@ -18,6 +19,34 @@ ARTIFACT_COLUMNS = [
     FieldNames.INFERENCE_DATA,
     FieldNames.LOG_INFO,
 ]
+
+# Columns that are metadata, not model result columns
+META_COLUMNS = {"metric_name", "strategy_args"}
+
+
+def _parse_model_column(col_name: str):
+    """
+    Parse a model column name like 'iTransformer;{...params...}' into model name and params dict.
+    """
+    if ";" not in col_name:
+        return col_name, {}
+    model_name, params_str = col_name.split(";", 1)
+    params_str = params_str.replace("'", '"')
+    try:
+        params = json.loads(params_str)
+    except (json.JSONDecodeError, ValueError):
+        params = {"raw": params_str}
+    return model_name, params
+
+
+def _sanitize_value(v):
+    """Replace NaN/inf with None for proper YAML null representation."""
+    if isinstance(v, float):
+        if pd.isna(v):
+            return None
+        if v == float("inf") or v == float("-inf"):
+            return None
+    return v
 
 
 def report(report_config: dict) -> None:
@@ -61,13 +90,27 @@ def report(report_config: dict) -> None:
     num_rows = leaderboard_df.shape[0]
     leaderboard_df.insert(0, "strategy_args", [log_data.iloc[0, 1]] * num_rows)
 
-    # Convert DataFrame to a list of dicts for YAML serialization
-    records = leaderboard_df.to_dict(orient="records")
-    # Replace NaN with None so yaml dumps null instead of .nan
-    yaml_data = [
-        {k: (None if isinstance(v, float) and pd.isna(v) else v) for k, v in row.items()}
-        for row in records
-    ]
+    # Build clean nested YAML structure:
+    # Each row: metric_name, strategy_args, models: [{name, params, value}, ...]
+    yaml_data = []
+    model_cols = [c for c in leaderboard_df.columns if c not in META_COLUMNS]
+
+    for _, row in leaderboard_df.iterrows():
+        entry = {
+            "metric_name": row["metric_name"],
+            "strategy_args": row["strategy_args"],
+        }
+        models = []
+        for col in model_cols:
+            model_name, params = _parse_model_column(col)
+            value = _sanitize_value(row[col])
+            models.append({
+                "name": model_name,
+                "params": params,
+                "value": value,
+            })
+        entry["models"] = models
+        yaml_data.append(entry)
 
     # Ensure the file name ends with .yaml
     file_name = report_config["leaderboard_file_name"]
