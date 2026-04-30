@@ -25,7 +25,7 @@
         "metrics": "all",
         "strategy_args": {
             "strategy_name": "rolling_forecast",
-            "horizon": 336,
+            "pred_len": 336,
             "tv_ratio": 0.8,
             "train_ratio_in_tv": {
                 "ETTm1.csv": 0.75,
