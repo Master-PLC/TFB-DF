@@ -63,7 +63,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/*"
+        rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -137,7 +137,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/*"
+        rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -213,7 +213,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/*"
+        rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -289,7 +289,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/*"
+        rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -364,7 +364,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/*"
+        rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -438,7 +438,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/*"
+        rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -513,7 +513,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/*"
+        rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -588,7 +588,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/*"
+        rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -665,7 +665,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/*"
+        rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
