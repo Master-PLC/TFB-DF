@@ -22,8 +22,8 @@ check_jobs(){
 
 job_number=0
 
-DATA_ROOT=dataset/forecasting
-OUT_ROOT=.
+DATA_ROOT=/mnt/tidalfs-bdsz01/usr/panlicheng/tfb_dataset/forecasting
+OUT_ROOT=/mnt/tidalfs-bdsz01/dataset/llm_ckpt/plc_data/TFB-DF
 EXP_NAME=baselines
 seed=2023
 deterministic=full
@@ -45,7 +45,7 @@ patience=3
 batch_size=32
 alpha=0.0
 
-rerun=0
+rerun=1
 
 for pl in ${pl_list[@]}; do
     if ! [[ " ${datasets[@]} " =~ " ${dst} " ]]; then
@@ -63,7 +63,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/stdout.log"
+        rm -rf "${OUTPUT_DIR}/*"
     else
         if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -136,7 +136,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/stdout.log"
+        rm -rf "${OUTPUT_DIR}/*"
     else
         if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -211,7 +211,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/stdout.log"
+        rm -rf "${OUTPUT_DIR}/*"
     else
         if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -286,7 +286,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/stdout.log"
+        rm -rf "${OUTPUT_DIR}/*"
     else
         if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -360,7 +360,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/stdout.log"
+        rm -rf "${OUTPUT_DIR}/*"
     else
         if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -433,7 +433,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/stdout.log"
+        rm -rf "${OUTPUT_DIR}/*"
     else
         if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -507,7 +507,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/stdout.log"
+        rm -rf "${OUTPUT_DIR}/*"
     else
         if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -581,7 +581,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/stdout.log"
+        rm -rf "${OUTPUT_DIR}/*"
     else
         if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -657,7 +657,7 @@ for pl in ${pl_list[@]}; do
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
     if [ $rerun -eq 1 ]; then
-        rm -rf "${OUTPUT_DIR}/stdout.log"
+        rm -rf "${OUTPUT_DIR}/*"
     else
         if ls "${OUTPUT_DIR}"/test_report.*.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
