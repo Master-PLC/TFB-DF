@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 import itertools
 import time
-from typing import List, Optional, Tuple, Any, Dict
 
 import numpy as np
-import pandas as pd
 from numpy.lib.stride_tricks import sliding_window_view
+import pandas as pd
+from typing import List, Optional, Tuple, Any, Dict
 
 from ts_benchmark.evaluation.metrics import regression_metrics
 from ts_benchmark.evaluation.strategy.constants import FieldNames
 from ts_benchmark.evaluation.strategy.forecasting import ForecastingStrategy
 from ts_benchmark.models import ModelFactory
 from ts_benchmark.models.model_base import BatchMaker, ModelBase
-from ts_benchmark.utils.data_processing import split_time
-from ts_benchmark.utils.data_processing import split_channel
+from ts_benchmark.utils.data_processing import split_channel, split_time
 
 
 class RollingForecastEvalBatchMaker:

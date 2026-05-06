@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import json
 import os
-from typing import Union, List
 
 import pandas as pd
-import yaml
+from typing import Union, List
 
 from common.constant import ROOT_PATH
 from ts_benchmark.evaluation.strategy.constants import FieldNames
 from ts_benchmark.recording import load_record_data
 from ts_benchmark.report.utils.leaderboard import get_leaderboard
+from ts_benchmark.report.utils.parse import _parse_model_column, _sanitize_value, _yaml_dump
 
 # currently we do not support showing or processing artifact columns
 # these columns are dropped as soon as data is loaded in order to save memory
@@ -24,33 +23,6 @@ ARTIFACT_COLUMNS = [
 META_COLUMNS = {"metric_name", "strategy_args"}
 
 
-def _parse_model_column(col_name: str):
-    if ";" not in col_name:
-        return col_name, {}
-    model_name, params_str = col_name.split(";", 1)
-    params_str = params_str.replace("'", '"')
-    try:
-        params = json.loads(params_str)
-    except (json.JSONDecodeError, ValueError):
-        params = {"raw": params_str}
-    return model_name, params
-
-
-def _sanitize_value(v):
-    if isinstance(v, float):
-        if pd.isna(v):
-            return None
-        if v == float("inf") or v == float("-inf"):
-            return None
-    return v
-
-
-def _yaml_dump(path: str, data):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        yaml.dump(data, f, allow_unicode=True, sort_keys=False, default_flow_style=False)
-
-
 def report(report_config: dict) -> None:
     """
     Generate per-model YAML reports: performance.yaml + config.yaml for each model.
@@ -59,8 +31,8 @@ def report(report_config: dict) -> None:
     - report_config (dict): see report_csv.report for full spec.
 
     Output per model (under save_path):
-      - performance.yaml : list of {metric_name: value}
-      - config.yaml      : model_name, params, strategy_args
+      - {model_name}.performance.yaml : columns: metric_name, value
+      - {model_name}.config.yaml      : flattened key-value pairs
     """
     log_files: Union[List[str], pd.DataFrame] = report_config.get("log_files_list")
     if not log_files:
@@ -100,11 +72,10 @@ def report(report_config: dict) -> None:
         }
 
         # config.yaml — model info + strategy (write once, not repeated per metric)
-        config = {
-            "model_name": model_name,
-            "model_params": params,
-            "strategy_args": leaderboard_df.iloc[0]["strategy_args"],
-        }
+        config = {"model_name": model_name}
+        strategy_args = leaderboard_df.iloc[0]["strategy_args"]
+        config.update(params)
+        config.update(strategy_args)
 
         _yaml_dump(os.path.join(save_path, f"{model_name}.{file_name}"), performance)
         _yaml_dump(os.path.join(save_path, f"{model_name}.config.yaml"), config)

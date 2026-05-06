@@ -46,7 +46,9 @@ batch_size=32
 alpha=0.0
 
 is_training=true
-rerun=1  # only useful when is_training=true
+num_rollings=null
+
+rerun=0  # only useful when is_training=true
 
 for pl in ${pl_list[@]}; do
     if ! [[ " ${datasets[@]} " =~ " ${dst} " ]]; then
@@ -69,7 +71,7 @@ for pl in ${pl_list[@]}; do
     elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
-        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/${model_name}.performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -92,7 +94,7 @@ for pl in ${pl_list[@]}; do
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
             --model_hyper_params "{\"d_ff\": 128, \"d_model\": 128, \"e_layers\": 2, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
-            --strategy_args "{\"horizon\": ${pl}}" \
+            --strategy_args "{\"horizon\": ${pl}, \"num_rollings\": ${num_rollings}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
             --eval_backend "sequential" \
@@ -122,8 +124,10 @@ patience=3
 batch_size=32
 alpha=0.0
 
-rerun=0
+is_training=true
+num_rollings=null
 
+rerun=0  # only useful when is_training=true
 
 for pl in ${pl_list[@]}; do
     if ! [[ " ${datasets[@]} " =~ " ${dst} " ]]; then
@@ -146,7 +150,7 @@ for pl in ${pl_list[@]}; do
     elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
-        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/${model_name}.performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -169,7 +173,7 @@ for pl in ${pl_list[@]}; do
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
             --model_hyper_params "{\"d_ff\": 128, \"d_model\": 128, \"e_layers\": 2, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
-            --strategy_args "{\"horizon\": ${pl}}" \
+            --strategy_args "{\"horizon\": ${pl}, \"num_rollings\": ${num_rollings}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
             --eval_backend "sequential" \
@@ -201,8 +205,10 @@ patience=3
 batch_size=32
 alpha=0.0
 
-rerun=0
+is_training=true
+num_rollings=null
 
+rerun=0  # only useful when is_training=true
 
 for pl in ${pl_list[@]}; do
     if ! [[ " ${datasets[@]} " =~ " ${dst} " ]]; then
@@ -225,7 +231,7 @@ for pl in ${pl_list[@]}; do
     elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
-        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/${model_name}.performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -248,7 +254,7 @@ for pl in ${pl_list[@]}; do
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
             --model_hyper_params "{\"d_ff\": 128, \"d_model\": 128, \"e_layers\": 2, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
-            --strategy_args "{\"horizon\": ${pl}}" \
+            --strategy_args "{\"horizon\": ${pl}, \"num_rollings\": ${num_rollings}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
             --eval_backend "sequential" \
@@ -280,8 +286,10 @@ patience=3
 batch_size=32
 alpha=0.0
 
-rerun=0
+is_training=true
+num_rollings=null
 
+rerun=0  # only useful when is_training=true
 
 for pl in ${pl_list[@]}; do
     if ! [[ " ${datasets[@]} " =~ " ${dst} " ]]; then
@@ -304,7 +312,7 @@ for pl in ${pl_list[@]}; do
     elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
-        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/${model_name}.performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -327,7 +335,7 @@ for pl in ${pl_list[@]}; do
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
             --model_hyper_params "{\"d_ff\": 128, \"d_model\": 128, \"e_layers\": 2, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
-            --strategy_args "{\"horizon\": ${pl}}" \
+            --strategy_args "{\"horizon\": ${pl}, \"num_rollings\": ${num_rollings}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
             --eval_backend "sequential" \
@@ -358,8 +366,10 @@ patience=3
 batch_size=16
 alpha=0.0
 
-rerun=0
+is_training=true
+num_rollings=null
 
+rerun=0  # only useful when is_training=true
 
 for pl in ${pl_list[@]}; do
     if ! [[ " ${datasets[@]} " =~ " ${dst} " ]]; then
@@ -382,7 +392,7 @@ for pl in ${pl_list[@]}; do
     elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
-        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/${model_name}.performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -405,7 +415,7 @@ for pl in ${pl_list[@]}; do
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
             --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 3, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
-            --strategy_args "{\"horizon\": ${pl}}" \
+            --strategy_args "{\"horizon\": ${pl}, \"num_rollings\": ${num_rollings}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
             --eval_backend "sequential" \
@@ -435,8 +445,10 @@ patience=3
 batch_size=8
 alpha=0.0
 
-rerun=0
+is_training=true
+num_rollings=null
 
+rerun=0  # only useful when is_training=true
 
 for pl in ${pl_list[@]}; do
     if ! [[ " ${datasets[@]} " =~ " ${dst} " ]]; then
@@ -459,7 +471,7 @@ for pl in ${pl_list[@]}; do
     elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
-        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/${model_name}.performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -482,7 +494,7 @@ for pl in ${pl_list[@]}; do
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
             --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 4, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
-            --strategy_args "{\"horizon\": ${pl}}" \
+            --strategy_args "{\"horizon\": ${pl}, \"num_rollings\": ${num_rollings}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
             --eval_backend "sequential" \
@@ -513,8 +525,10 @@ patience=3
 batch_size=32
 alpha=0.0
 
-rerun=0
+is_training=true
+num_rollings=null
 
+rerun=0  # only useful when is_training=true
 
 for pl in ${pl_list[@]}; do
     if ! [[ " ${datasets[@]} " =~ " ${dst} " ]]; then
@@ -537,7 +551,7 @@ for pl in ${pl_list[@]}; do
     elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
-        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/${model_name}.performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -560,7 +574,7 @@ for pl in ${pl_list[@]}; do
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
             --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 3, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
-            --strategy_args "{\"horizon\": ${pl}}" \
+            --strategy_args "{\"horizon\": ${pl}, \"num_rollings\": ${num_rollings}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
             --eval_backend "sequential" \
@@ -591,8 +605,10 @@ patience=3
 batch_size=32
 alpha=0.0
 
-rerun=0
+is_training=true
+num_rollings=null
 
+rerun=0  # only useful when is_training=true
 
 for pl in ${pl_list[@]}; do
     if ! [[ " ${datasets[@]} " =~ " ${dst} " ]]; then
@@ -615,7 +631,7 @@ for pl in ${pl_list[@]}; do
     elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
-        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/${model_name}.performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -638,7 +654,7 @@ for pl in ${pl_list[@]}; do
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
             --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 4, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
-            --strategy_args "{\"horizon\": ${pl}}" \
+            --strategy_args "{\"horizon\": ${pl}, \"num_rollings\": ${num_rollings}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
             --eval_backend "sequential" \
@@ -671,8 +687,10 @@ patience=3
 batch_size=32
 alpha=0.0
 
-rerun=0
+is_training=true
+num_rollings=null
 
+rerun=0  # only useful when is_training=true
 
 for pl in ${pl_list[@]}; do
     if ! [[ " ${datasets[@]} " =~ " ${dst} " ]]; then
@@ -695,7 +713,7 @@ for pl in ${pl_list[@]}; do
     elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
-        if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
+        if ls "${OUTPUT_DIR}"/${model_name}.performance.${report_method} 1>/dev/null 2>&1; then
             echo ">>>>>>> Job: $JOB_NAME already run, skip <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue
         fi
@@ -718,7 +736,7 @@ for pl in ${pl_list[@]}; do
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
             --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 4, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
-            --strategy_args "{\"horizon\": ${pl}}" \
+            --strategy_args "{\"horizon\": ${pl}, \"num_rollings\": ${num_rollings}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
             --eval_backend "sequential" \
