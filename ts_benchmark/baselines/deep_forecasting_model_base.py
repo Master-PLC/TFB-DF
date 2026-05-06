@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 from typing import Optional, Tuple
 
 from common.constant import ROOT_PATH
-from ts_benchmark.baselines.utils import EarlyStopping, adjust_learning_rate, forecasting_data_provider, train_val_split, get_time_mark
+from ts_benchmark.baselines.utils import EarlyStopping, adjust_learning_rate, forecasting_data_provider, train_val_split, get_time_mark, Scheduler, LocalBufferWriter
 from ts_benchmark.models.model_base import ModelBase, BatchMaker
 from ts_benchmark.utils.data_processing import split_time
 from ts_benchmark.utils.get_device import get_device
@@ -47,6 +47,11 @@ DEFAULT_HYPER_PARAMS = {
     "module_first": True,
     "is_training": True,
     "save_path": None,
+    "step_size": 1,
+    "lr_decay": 0.5,
+    "min_lr": 1e-6,
+    "mode": 0,
+    "pct_start": 0.2,
 }
 
 
@@ -167,6 +172,24 @@ class DeepForecastingModelBase(ModelBase):
 
         optimizer = optim.Adam(self.model.parameters(), lr=self.config.lr)
         return criterion, optimizer
+
+    def _init_scheduler(self, optimizer, train_steps):
+        """
+        Initializes the learning rate scheduler.
+
+        This method sets up the learning rate scheduler based on the configuration in `self.config`.
+        It supports various types of schedulers, including StepLR, LambdaLR with custom lambda functions, and cosine annealing.
+
+        :param optimizer: The optimizer for which the learning rate scheduler will be initialized.
+        :return: The initialized learning rate scheduler.
+        """
+        return Scheduler(optimizer, self.config, train_steps)
+
+    def _init_writer(self, log_dir):
+        """
+        Initializes the writer for logging training metrics.
+        """
+        return LocalBufferWriter(log_dir)
 
     def _compute_auxi_loss(self, outputs: torch.Tensor, batch_y: torch.Tensor) -> torch.Tensor:
         """
@@ -486,15 +509,14 @@ class DeepForecastingModelBase(ModelBase):
         config = self.config
 
         # Derive checkpoint directory from save_path + model_name
-        save_path = getattr(config, "save_path", None)
-        checkpoint_dir = save_path if save_path is not None else os.path.join(ROOT_PATH, "results")
+        save_path = config.save_path or os.path.join(ROOT_PATH, "results")
 
         # ---- Not training mode: load checkpoint and return early ----
         is_training = getattr(config, "is_training", True)
         if not is_training:
             self.model.to(get_device())
-            self.load_checkpoint(checkpoint_dir)
-            print("Skipping training, checkpoint loaded from:", checkpoint_dir)
+            self.load_checkpoint(save_path)
+            print("Skipping training, checkpoint loaded from:", save_path)
             return self
         # ---- End of not-training branch ----
 
@@ -535,6 +557,7 @@ class DeepForecastingModelBase(ModelBase):
             shuffle=True,
             drop_last=train_drop_last,
         )
+        train_steps = len(self.train_data_loader)
 
         # Define the loss function and optimizer
         criterion, optimizer = self._init_criterion_and_optimizer()
@@ -547,6 +570,8 @@ class DeepForecastingModelBase(ModelBase):
 
 
         self.early_stopping = self._init_early_stopping()
+        self.scheduler = self._init_scheduler(optimizer, train_steps)
+        self.writer = self._init_writer(save_path)
         self.model.to(device)
         total_params = sum(
             p.numel() for p in self.model.parameters() if p.requires_grad
@@ -554,12 +579,16 @@ class DeepForecastingModelBase(ModelBase):
 
         print(f"Total trainable parameters: {total_params}")
 
+        rec_lambda = getattr(config, "rec_lambda", 1.0)
+        auxi_lambda = getattr(config, "auxi_lambda", 0.0)
+
         for epoch in range(config.num_epochs):
+            train_loss = []
+            rec_loss, auxi_loss = [], []
+
             self.model.train()
             # for input, target, input_mark, target_mark in train_data_loader:
-            for i, (input, target, input_mark, target_mark) in enumerate(
-                self.train_data_loader
-            ):
+            for i, (input, target, input_mark, target_mark) in enumerate(self.train_data_loader):
                 optimizer.zero_grad()
                 input, target, input_mark, target_mark = (
                     input.to(device),
@@ -582,19 +611,23 @@ class DeepForecastingModelBase(ModelBase):
 
                 # Main reconstruction loss
                 # Apply reconstruction loss with lambda weight
-                rec_lambda = getattr(config, "rec_lambda", 1.0)
                 if rec_lambda > 0:
                     loss_rec = criterion(output, target)
                     total_loss += rec_lambda * loss_rec
+                    rec_loss.append(loss_rec.item())
+                    self.writer.add_scalar("train_iter/loss_rec", loss_rec.item(), epoch * train_steps + i + 1)
 
                 # Compute and apply auxiliary loss with lambda weight
-                auxi_lambda = getattr(config, "auxi_lambda", 0.0)
                 if auxi_lambda > 0:
                     loss_auxi = self._compute_auxi_loss(output, target)
                     total_loss += auxi_lambda * loss_auxi
+                    auxi_loss.append(loss_auxi.item())
+                    self.writer.add_scalar("train_iter/loss_auxi", loss_auxi.item(), epoch * train_steps + i + 1)
 
                 # Include any additional loss from _process
                 total_loss += additional_loss
+                train_loss.append(total_loss.item())
+                self.writer.add_scalar("train_iter/loss", total_loss.item(), epoch * train_steps + i + 1)
 
                 if config.use_amp == 1:
                     scaler.scale(total_loss).backward()
@@ -605,18 +638,32 @@ class DeepForecastingModelBase(ModelBase):
                     optimizer.step()
 
                 if self.config.lradj == "TST":
-                    self._adjust_lr(optimizer, epoch + 1, config)
+                    # self._adjust_lr(optimizer, epoch + 1, config)
+                    self.scheduler.step(verbose=(i + 1 == train_steps))
+
+            if rec_lambda > 0:
+                rec_loss = np.mean(rec_loss)
+                self.writer.add_scalar("train/loss_rec", rec_loss, epoch + 1)
+            if auxi_lambda > 0:
+                auxi_loss = np.mean(auxi_loss)
+                self.writer.add_scalar("train/loss_auxi", auxi_loss, epoch + 1)
+            train_loss = np.mean(train_loss)
+            self.writer.add_scalar("train/loss", train_loss, epoch + 1)
 
             if train_ratio_in_tv != 1:
                 valid_loss = self.validate(valid_data_loader, series_dim, criterion)
+                self.writer.add_scalar("vali/loss", valid_loss, epoch + 1)
                 improved = self.early_stopping(valid_loss, self.model)
                 if improved:
-                    self.check_point = self.save_checkpoint(checkpoint_dir=checkpoint_dir)
+                    self.check_point = self.save_checkpoint(checkpoint_dir=save_path)
                 if self.early_stopping.early_stop:
                     break
 
             if self.config.lradj != "TST":
-                self._adjust_lr(optimizer, epoch + 1, config)
+                # self._adjust_lr(optimizer, epoch + 1, config)
+                self.scheduler.step(valid_loss, epoch + 1)
+
+        self.writer.close()
 
     def forecast(
         self,

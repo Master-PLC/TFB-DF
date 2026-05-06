@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-from typing import Tuple
+
+import math
+import os
+import torch
 
 import numpy as np
 import pandas as pd
-import torch
+import torch.optim as optim
 from torch.utils.data import DataLoader
+from typing import Tuple
 
-from ts_benchmark.baselines.time_series_library.utils.timefeatures import (
-    time_features,
-)
+from ts_benchmark.baselines.time_series_library.utils.timefeatures import time_features
 from ts_benchmark.utils.data_processing import split_time
 
 
@@ -29,6 +31,94 @@ def adjust_learning_rate(optimizer, epoch, args):
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
         print("Updating learning rate to {}".format(lr))
+
+
+class Scheduler:
+    def __init__(self, optimizer, args, train_steps, fixed_epoch=None, lradj=None):
+        self.optimizer = optimizer
+        self.lradj = args.lradj if lradj is None else lradj
+        self.num_epochs = args.num_epochs
+        self.train_steps = train_steps
+
+        self.step_size = args.step_size
+        self.lr_decay = args.lr_decay
+        self.min_lr = args.min_lr
+        self.mode = args.mode
+        self.pct_start = args.pct_start
+        self.fixed_epoch = 3 if fixed_epoch is None else fixed_epoch
+
+        if self.lradj is None or self.lradj == 'constant':
+            self.scheduler = None
+
+        elif self.lradj == 'reduce':
+            _mode = 'min' if self.mode == 0 else 'max'
+            self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode=_mode, factor=self.lr_decay, patience=self.step_size, min_lr=self.min_lr)
+
+        elif self.lradj == 'cosine':
+            self.scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.step_size, eta_min=self.min_lr)
+
+        elif self.lradj == 'step':
+            self.scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=self.step_size, gamma=self.lr_decay)
+
+        elif self.lradj == 'type1':
+            self.scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: 0.5 ** ((epoch - 1) // 1))
+
+        elif self.lradj == 'type2':
+            lr_adjust = {2: 5e-5, 4: 1e-5, 6: 5e-6, 8: 1e-6, 10: 5e-7, 15: 1e-7, 20: 5e-8}
+            lr_lambda = {epoch: lr / args.learning_rate for epoch, lr in lr_adjust.items()}
+            self.scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: lr_lambda.get(epoch, 1.0))
+
+        elif self.lradj == 'type3':
+            self.scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: 1.0 if epoch < self.fixed_epoch else 0.9 ** ((epoch - self.fixed_epoch) // 1))
+
+        elif self.lradj == 'cosine2':
+            self.scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: (1 + math.cos(epoch / args.num_epochs * math.pi)) / 2)
+
+        elif self.lradj == 'TST':
+            max_lr = [g['lr'] for g in optimizer.param_groups]
+            if len(max_lr) == 1:
+                max_lr = max_lr[0]
+            self.scheduler = optim.lr_scheduler.OneCycleLR(
+                optimizer, steps_per_epoch=self.train_steps, epochs=self.num_epochs,
+                max_lr=max_lr, pct_start=self.pct_start
+            )
+
+        elif self.lradj == 'sigmoid':
+            k = 0.5 # logistic growth rate
+            s = 10  # decreasing curve smoothing rate
+            w = 10
+            self.scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: 1 / (1 + np.exp(-k * (epoch - w))) - 1 / (1 + np.exp(-k/s * (epoch - w*s))))
+
+        else:
+            raise NotImplementedError
+
+        if self.scheduler is not None:
+            self.last_lr = self.scheduler._last_lr[0] if len(self.scheduler._last_lr) == 1 else list(self.scheduler._last_lr)
+        else:
+            lrs = [g['lr'] for g in optimizer.param_groups]
+            self.last_lr = lrs[0] if len(lrs) == 1 else lrs
+        print(f'Initial learning rates: {self.last_lr}')
+
+    def get_lr(self):
+        return self.last_lr
+
+    def step(self, val_loss=None, epoch=None, verbose=True):
+        if self.lradj is None or self.lradj == 'constant':
+            return
+        elif self.lradj == 'reduce':
+            self.scheduler.step(val_loss, epoch)
+        elif epoch is not None:
+            self.scheduler.step(epoch)
+        else:
+            self.scheduler.step()
+        self.lr_info(verbose=verbose)
+
+    def lr_info(self, verbose=True):
+        last_lrs = self.scheduler._last_lr[0] if len(self.scheduler._last_lr) == 1 else list(self.scheduler._last_lr)
+        if last_lrs != self.last_lr:
+            if verbose:
+                print(f'Updating learning rate from {self.last_lr} to {last_lrs}')
+            self.last_lr = last_lrs
 
 
 class EarlyStopping:
@@ -64,6 +154,53 @@ class EarlyStopping:
             self.val_loss_min = val_loss
             self.counter = 0
         return improved
+
+
+class LocalBufferWriter:
+    def __init__(self, log_dir):
+        self.log_dir = log_dir
+        # 数据结构: { 'scalars': {...}, 'figures': {...} }
+        self.data = {
+            'scalars': {},
+            'figures': {}
+        }
+
+    def add_scalar(self, tag, value, step):
+        if tag not in self.data['scalars']:
+            self.data['scalars'][tag] = {'steps': [], 'values': []}
+        
+        if torch.is_tensor(value):
+            value = value.item()
+        
+        self.data['scalars'][tag]['steps'].append(step)
+        self.data['scalars'][tag]['values'].append(value)
+
+    def add_figure(self, tag, figure, step):
+        """
+        将 matplotlib figure 转为 RGB numpy 数组缓存
+        """
+        if tag not in self.data['figures']:
+            self.data['figures'][tag] = {'steps': [], 'images': []}
+
+        # === 核心黑魔法：Figure -> Numpy Array ===
+        # 1. 强制重绘，确保内容是最新的
+        figure.canvas.draw()
+        
+        # 2. 获取 RGB 数据 (H, W, 3)
+        # 注意：frombuffer 拿出来是 flat 的，需要 reshape
+        data = np.frombuffer(figure.canvas.tostring_argb(), dtype=np.uint8)
+        w, h = figure.canvas.get_width_height()
+        data = data.reshape((h, w, 4))
+        data = data[:, :, 1:4]
+        
+        # 3. 存入列表 (为了节省空间，建议在这里 copy 一份，防止引用问题)
+        self.data['figures'][tag]['steps'].append(step)
+        self.data['figures'][tag]['images'].append(data.copy())
+
+    def close(self):
+        os.makedirs(self.log_dir, exist_ok=True)
+        file_path = os.path.join(self.log_dir, 'events.pth')
+        torch.save(self.data, file_path)
 
 
 class SlidingWindowDataLoader:
