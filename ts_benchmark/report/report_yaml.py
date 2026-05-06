@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import os
 
 import pandas as pd
@@ -73,7 +74,7 @@ def report(report_config: dict) -> None:
 
         # config.yaml — model info + strategy (write once, not repeated per metric)
         config = {"model_name": model_name}
-        strategy_args = leaderboard_df.iloc[0]["strategy_args"]
+        strategy_args = json.loads(leaderboard_df.iloc[0]["strategy_args"])
         config.update(params)
         config.update(strategy_args)
 

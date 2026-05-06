@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import os
 
 import pandas as pd
@@ -86,7 +87,7 @@ def report(report_config: dict) -> None:
 
         # config.csv — flattened key-value pairs
         config_items = {"model_name": model_name}
-        strategy_args = leaderboard_df.iloc[0]["strategy_args"]
+        strategy_args = json.loads(leaderboard_df.iloc[0]["strategy_args"])
         config_items.update(params)
         config_items.update(strategy_args)
         config_df = pd.DataFrame(config_items.items(), columns=["key", "value"])
