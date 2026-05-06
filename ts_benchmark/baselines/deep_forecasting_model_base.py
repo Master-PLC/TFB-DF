@@ -592,7 +592,7 @@ class DeepForecastingModelBase(ModelBase):
             rec_loss, auxi_loss = [], []
 
             self.model.train()
-            epoch_time = time.time()
+            time_now = epoch_time = time.time()
             # for input, target, input_mark, target_mark in train_data_loader:
             for i, (input, target, input_mark, target_mark) in enumerate(self.train_data_loader):
                 iter_count += 1
@@ -641,15 +641,6 @@ class DeepForecastingModelBase(ModelBase):
                 train_loss.append(total_loss.item())
                 self.writer.add_scalar("train_iter/loss", total_loss.item(), epoch * train_steps + i + 1)
 
-                if (i + 1) % 100 == 0:
-                    print(line)
-                    cost_time = time.time() - time_now
-                    speed = cost_time / iter_count
-                    left_time = speed * ((config.num_epochs - epoch) * train_steps - i)
-                    print(f'\tspeed: {speed:.4f}s/iter; cost time: {cost_time:.4f}s; left time: {left_time:.4f}s')
-                    iter_count = 0
-                    time_now = time.time()
-
                 if config.use_amp == 1:
                     scaler.scale(total_loss).backward()
                     scaler.step(optimizer)
@@ -661,6 +652,15 @@ class DeepForecastingModelBase(ModelBase):
                 if self.config.lradj == "TST":
                     # self._adjust_lr(optimizer, epoch + 1, config)
                     self.scheduler.step(verbose=(i + 1 == train_steps))
+
+                if (i + 1) % 100 == 0:
+                    print(line)
+                    cost_time = time.time() - time_now
+                    speed = cost_time / iter_count
+                    left_time = speed * ((config.num_epochs - epoch) * train_steps - i)
+                    print(f'\tspeed: {speed:.4f}s/iter; cost time: {cost_time:.4f}s; left time: {left_time:.4f}s')
+                    iter_count = 0
+                    time_now = time.time()
 
             print(f"Epoch: {epoch + 1} cost time: {time.time() - epoch_time}")
             if rec_lambda > 0:
