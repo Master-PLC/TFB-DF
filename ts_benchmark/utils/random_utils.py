@@ -27,5 +27,6 @@ def fix_all_random_seed(seed: Optional[int] = 2021) -> NoReturn:
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.enabled = False
+    torch.use_deterministic_algorithms(True)
 
     os.environ["PYTHONHASHSEED"] = str(1)
