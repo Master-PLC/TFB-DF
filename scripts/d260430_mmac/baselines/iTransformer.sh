@@ -46,7 +46,7 @@ batch_size=32
 alpha=0.0
 
 is_training=true
-rerun=1
+rerun=1  # only useful when is_training=true
 
 for pl in ${pl_list[@]}; do
     if ! [[ " ${datasets[@]} " =~ " ${dst} " ]]; then
@@ -63,7 +63,10 @@ for pl in ${pl_list[@]}; do
 
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
-    if [ $rerun -eq 1 ]; then
+    if [ "$is_training" = false ]; then
+        # inference only, always run
+        :
+    elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
@@ -88,7 +91,7 @@ for pl in ${pl_list[@]}; do
             --data_set_name "large_forecast" \
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
-            --model_hyper_params "{\"d_ff\": 128, \"d_model\": 128, \"e_layers\": 2, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": \"${is_training}\"}" \
+            --model_hyper_params "{\"d_ff\": 128, \"d_model\": 128, \"e_layers\": 2, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
             --strategy_args "{\"horizon\": ${pl}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
@@ -137,7 +140,10 @@ for pl in ${pl_list[@]}; do
 
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
-    if [ $rerun -eq 1 ]; then
+    if [ "$is_training" = false ]; then
+        # inference only, always run
+        :
+    elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
@@ -162,7 +168,7 @@ for pl in ${pl_list[@]}; do
             --data_set_name "large_forecast" \
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
-            --model_hyper_params "{\"d_ff\": 128, \"d_model\": 128, \"e_layers\": 2, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": \"${is_training}\"}" \
+            --model_hyper_params "{\"d_ff\": 128, \"d_model\": 128, \"e_layers\": 2, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
             --strategy_args "{\"horizon\": ${pl}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
@@ -213,7 +219,10 @@ for pl in ${pl_list[@]}; do
 
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
-    if [ $rerun -eq 1 ]; then
+    if [ "$is_training" = false ]; then
+        # inference only, always run
+        :
+    elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
@@ -238,7 +247,7 @@ for pl in ${pl_list[@]}; do
             --data_set_name "large_forecast" \
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
-            --model_hyper_params "{\"d_ff\": 128, \"d_model\": 128, \"e_layers\": 2, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": \"${is_training}\"}" \
+            --model_hyper_params "{\"d_ff\": 128, \"d_model\": 128, \"e_layers\": 2, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
             --strategy_args "{\"horizon\": ${pl}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
@@ -289,7 +298,10 @@ for pl in ${pl_list[@]}; do
 
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
-    if [ $rerun -eq 1 ]; then
+    if [ "$is_training" = false ]; then
+        # inference only, always run
+        :
+    elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
@@ -314,7 +326,7 @@ for pl in ${pl_list[@]}; do
             --data_set_name "large_forecast" \
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
-            --model_hyper_params "{\"d_ff\": 128, \"d_model\": 128, \"e_layers\": 2, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": \"${is_training}\"}" \
+            --model_hyper_params "{\"d_ff\": 128, \"d_model\": 128, \"e_layers\": 2, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
             --strategy_args "{\"horizon\": ${pl}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
@@ -364,7 +376,10 @@ for pl in ${pl_list[@]}; do
 
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
-    if [ $rerun -eq 1 ]; then
+    if [ "$is_training" = false ]; then
+        # inference only, always run
+        :
+    elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
@@ -389,7 +404,7 @@ for pl in ${pl_list[@]}; do
             --data_set_name "large_forecast" \
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
-            --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 3, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": \"${is_training}\"}" \
+            --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 3, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
             --strategy_args "{\"horizon\": ${pl}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
@@ -438,7 +453,10 @@ for pl in ${pl_list[@]}; do
 
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
-    if [ $rerun -eq 1 ]; then
+    if [ "$is_training" = false ]; then
+        # inference only, always run
+        :
+    elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
@@ -463,7 +481,7 @@ for pl in ${pl_list[@]}; do
             --data_set_name "large_forecast" \
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
-            --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 4, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": \"${is_training}\"}" \
+            --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 4, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
             --strategy_args "{\"horizon\": ${pl}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
@@ -513,7 +531,10 @@ for pl in ${pl_list[@]}; do
 
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
-    if [ $rerun -eq 1 ]; then
+    if [ "$is_training" = false ]; then
+        # inference only, always run
+        :
+    elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
@@ -538,7 +559,7 @@ for pl in ${pl_list[@]}; do
             --data_set_name "large_forecast" \
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
-            --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 3, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": \"${is_training}\"}" \
+            --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 3, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
             --strategy_args "{\"horizon\": ${pl}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
@@ -588,7 +609,10 @@ for pl in ${pl_list[@]}; do
 
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
-    if [ $rerun -eq 1 ]; then
+    if [ "$is_training" = false ]; then
+        # inference only, always run
+        :
+    elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
@@ -613,7 +637,7 @@ for pl in ${pl_list[@]}; do
             --data_set_name "large_forecast" \
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
-            --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 4, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": \"${is_training}\"}" \
+            --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 4, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
             --strategy_args "{\"horizon\": ${pl}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
@@ -665,7 +689,10 @@ for pl in ${pl_list[@]}; do
 
     mkdir -p "${OUTPUT_DIR}/"
     # if rerun, remove the previous stdout
-    if [ $rerun -eq 1 ]; then
+    if [ "$is_training" = false ]; then
+        # inference only, always run
+        :
+    elif [ $rerun -eq 1 ]; then
         rm -rf "${OUTPUT_DIR}"/*
     else
         if ls "${OUTPUT_DIR}"/performance.${report_method} 1>/dev/null 2>&1; then
@@ -690,7 +717,7 @@ for pl in ${pl_list[@]}; do
             --data_set_name "large_forecast" \
             --adapter "transformer_adapter" \
             --model_name "time_series_library.iTransformer" \
-            --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 4, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": \"${is_training}\"}" \
+            --model_hyper_params "{\"d_ff\": 512, \"d_model\": 512, \"e_layers\": 4, \"horizon\": ${pl}, \"norm\": true, \"seq_len\": 96, \"label_len\": 48, \"lr\": ${lr}, \"lradj\": \"${lradj}\", \"num_epochs\": ${num_epochs}, \"patience\": ${patience}, \"batch_size\": ${batch_size}, \"rec_lambda\": ${rl}, \"auxi_lambda\": ${ax}, \"is_training\": ${is_training}}" \
             --strategy_args "{\"horizon\": ${pl}}" \
             --seed ${seed} \
             --deterministic ${deterministic} \
