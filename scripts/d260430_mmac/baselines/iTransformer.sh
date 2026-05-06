@@ -46,6 +46,7 @@ batch_size=32
 alpha=0.0
 
 is_training=true
+save_true_pred=false
 num_rollings=null
 
 rerun=0  # only useful when is_training=true
@@ -103,7 +104,7 @@ for pl in ${pl_list[@]}; do
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
             --simpler_save_name true \
-            --save_true_pred false
+            --save_true_pred ${save_true_pred}
 
         sleep 5
     } &
@@ -125,6 +126,7 @@ batch_size=32
 alpha=0.0
 
 is_training=true
+save_true_pred=false
 num_rollings=null
 
 rerun=0  # only useful when is_training=true
@@ -182,7 +184,7 @@ for pl in ${pl_list[@]}; do
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
             --simpler_save_name true \
-            --save_true_pred false
+            --save_true_pred ${save_true_pred}
 
         sleep 5
     } &
@@ -206,6 +208,7 @@ batch_size=32
 alpha=0.0
 
 is_training=true
+save_true_pred=false
 num_rollings=null
 
 rerun=0  # only useful when is_training=true
@@ -263,7 +266,7 @@ for pl in ${pl_list[@]}; do
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
             --simpler_save_name true \
-            --save_true_pred false
+            --save_true_pred ${save_true_pred}
 
         sleep 5
     } &
@@ -287,6 +290,7 @@ batch_size=32
 alpha=0.0
 
 is_training=true
+save_true_pred=false
 num_rollings=null
 
 rerun=0  # only useful when is_training=true
@@ -344,7 +348,7 @@ for pl in ${pl_list[@]}; do
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
             --simpler_save_name true \
-            --save_true_pred false
+            --save_true_pred ${save_true_pred}
 
         sleep 5
     } &
@@ -367,6 +371,7 @@ batch_size=16
 alpha=0.0
 
 is_training=true
+save_true_pred=false
 num_rollings=null
 
 rerun=0  # only useful when is_training=true
@@ -424,7 +429,7 @@ for pl in ${pl_list[@]}; do
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
             --simpler_save_name true \
-            --save_true_pred false
+            --save_true_pred ${save_true_pred}
 
         sleep 5
     } &
@@ -446,6 +451,7 @@ batch_size=8
 alpha=0.0
 
 is_training=true
+save_true_pred=false
 num_rollings=null
 
 rerun=0  # only useful when is_training=true
@@ -503,7 +509,7 @@ for pl in ${pl_list[@]}; do
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
             --simpler_save_name true \
-            --save_true_pred false
+            --save_true_pred ${save_true_pred}
 
         sleep 5
     } &
@@ -526,6 +532,7 @@ batch_size=32
 alpha=0.0
 
 is_training=true
+save_true_pred=false
 num_rollings=null
 
 rerun=0  # only useful when is_training=true
@@ -583,7 +590,7 @@ for pl in ${pl_list[@]}; do
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
             --simpler_save_name true \
-            --save_true_pred false
+            --save_true_pred ${save_true_pred}
 
         sleep 5
     } &
@@ -606,6 +613,7 @@ batch_size=32
 alpha=0.0
 
 is_training=true
+save_true_pred=false
 num_rollings=null
 
 rerun=0  # only useful when is_training=true
@@ -663,7 +671,7 @@ for pl in ${pl_list[@]}; do
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
             --simpler_save_name true \
-            --save_true_pred false
+            --save_true_pred ${save_true_pred}
 
         sleep 5
     } &
@@ -688,6 +696,7 @@ batch_size=32
 alpha=0.0
 
 is_training=true
+save_true_pred=false
 num_rollings=null
 
 rerun=0  # only useful when is_training=true
@@ -745,7 +754,7 @@ for pl in ${pl_list[@]}; do
             --report_method ${report_method} \
             --save_path ${OUTPUT_DIR} \
             --simpler_save_name true \
-            --save_true_pred false
+            --save_true_pred ${save_true_pred}
 
         sleep 5
     } &
