@@ -106,5 +106,5 @@ def report(report_config: dict) -> None:
             "strategy_args": leaderboard_df.iloc[0]["strategy_args"],
         }
 
-        _yaml_dump(os.path.join(save_path, f"{model_name}.{file_name}.yaml"), performance)
+        _yaml_dump(os.path.join(save_path, f"{model_name}.{file_name}"), performance)
         _yaml_dump(os.path.join(save_path, f"{model_name}.config.yaml"), config)
