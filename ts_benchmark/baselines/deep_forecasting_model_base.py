@@ -8,6 +8,7 @@ import logging
 import math
 import os
 import pickle
+import time
 import torch
 
 import numpy as np
@@ -586,12 +587,15 @@ class DeepForecastingModelBase(ModelBase):
         auxi_lambda = getattr(config, "auxi_lambda", 0.0)
 
         for epoch in range(config.num_epochs):
+            iter_count = 0
             train_loss = []
             rec_loss, auxi_loss = [], []
 
             self.model.train()
+            epoch_time = time.time()
             # for input, target, input_mark, target_mark in train_data_loader:
             for i, (input, target, input_mark, target_mark) in enumerate(self.train_data_loader):
+                iter_count += 1
                 optimizer.zero_grad()
                 input, target, input_mark, target_mark = (
                     input.to(device),
@@ -612,11 +616,14 @@ class DeepForecastingModelBase(ModelBase):
 
                 total_loss = torch.tensor(0.0, device=output.device)
 
+                line = f"\titers: {i + 1}, epoch: {epoch + 1} | "
+
                 # Main reconstruction loss
                 # Apply reconstruction loss with lambda weight
                 if rec_lambda > 0:
                     loss_rec = criterion(output, target)
                     total_loss += rec_lambda * loss_rec
+                    line += f"loss_rec: {loss_rec.item():.7f}, "
                     rec_loss.append(loss_rec.item())
                     self.writer.add_scalar("train_iter/loss_rec", loss_rec.item(), epoch * train_steps + i + 1)
 
@@ -624,13 +631,24 @@ class DeepForecastingModelBase(ModelBase):
                 if auxi_lambda > 0:
                     loss_auxi = self._compute_auxi_loss(output, target)
                     total_loss += auxi_lambda * loss_auxi
+                    line += f"loss_auxi: {loss_auxi.item():.7f}, "
                     auxi_loss.append(loss_auxi.item())
                     self.writer.add_scalar("train_iter/loss_auxi", loss_auxi.item(), epoch * train_steps + i + 1)
 
                 # Include any additional loss from _process
                 total_loss += additional_loss
+                line += f"loss: {total_loss.item():.7f}"
                 train_loss.append(total_loss.item())
                 self.writer.add_scalar("train_iter/loss", total_loss.item(), epoch * train_steps + i + 1)
+
+                if (i + 1) % 100 == 0:
+                    print(line)
+                    cost_time = time.time() - time_now
+                    speed = cost_time / iter_count
+                    left_time = speed * ((config.num_epochs - epoch) * train_steps - i)
+                    print(f'\tspeed: {speed:.4f}s/iter; cost time: {cost_time:.4f}s; left time: {left_time:.4f}s')
+                    iter_count = 0
+                    time_now = time.time()
 
                 if config.use_amp == 1:
                     scaler.scale(total_loss).backward()
@@ -644,6 +662,7 @@ class DeepForecastingModelBase(ModelBase):
                     # self._adjust_lr(optimizer, epoch + 1, config)
                     self.scheduler.step(verbose=(i + 1 == train_steps))
 
+            print(f"Epoch: {epoch + 1} cost time: {time.time() - epoch_time}")
             if rec_lambda > 0:
                 rec_loss = np.mean(rec_loss)
                 self.writer.add_scalar("train/loss_rec", rec_loss, epoch + 1)
@@ -653,14 +672,21 @@ class DeepForecastingModelBase(ModelBase):
             train_loss = np.mean(train_loss)
             self.writer.add_scalar("train/loss", train_loss, epoch + 1)
 
+            line = f"Epoch: {epoch + 1} | Train Loss: {train_loss:.7f}"
             if train_ratio_in_tv != 1:
                 valid_loss = self.validate(valid_data_loader, series_dim, criterion)
+                line += f", Valid Loss: {valid_loss:.7f}"
                 self.writer.add_scalar("vali/loss", valid_loss, epoch + 1)
+                print(line)
+
                 improved = self.early_stopping(valid_loss, self.model)
                 if improved:
                     self.check_point = self.save_checkpoint(checkpoint_dir=save_path)
                 if self.early_stopping.early_stop:
+                    print("Early stopping")
                     break
+            else:
+                print(line)
 
             if self.config.lradj != "TST":
                 # self._adjust_lr(optimizer, epoch + 1, config)
