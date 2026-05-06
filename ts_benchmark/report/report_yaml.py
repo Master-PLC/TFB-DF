@@ -25,9 +25,6 @@ META_COLUMNS = {"metric_name", "strategy_args"}
 
 
 def _parse_model_column(col_name: str):
-    """
-    Parse a model column name like 'iTransformer;{...params...}' into model name and params dict.
-    """
     if ";" not in col_name:
         return col_name, {}
     model_name, params_str = col_name.split(";", 1)
@@ -40,7 +37,6 @@ def _parse_model_column(col_name: str):
 
 
 def _sanitize_value(v):
-    """Replace NaN/inf with None for proper YAML null representation."""
     if isinstance(v, float):
         if pd.isna(v):
             return None
@@ -49,25 +45,22 @@ def _sanitize_value(v):
     return v
 
 
+def _yaml_dump(path: str, data):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        yaml.dump(data, f, allow_unicode=True, sort_keys=False, default_flow_style=False)
+
+
 def report(report_config: dict) -> None:
     """
-    Generate a YAML report based on specified configuration parameters.
+    Generate per-model YAML reports: performance.yaml + config.yaml for each model.
 
     Parameters:
-    - report_config (dict): A dictionary containing the following keys and their respective values:
-        - log_files_list (List[str]): A list of file paths for log files.
-        - leaderboard_file_name (str): The name for the saved report file (without extension,
-          or with .yaml / .yml extension).
-        - aggregate_type (str): The aggregation type used when reporting the final results of evaluation metrics.
-        - report_metrics (Union[str, List[str]]): The metrics for the report, can be a string or a list of strings.
-        - fill_type (str): The type of fill for missing values.
-        - null_value_threshold (float): The threshold value for null metrics.
+    - report_config (dict): see report_csv.report for full spec.
 
-    Raises:
-    - ValueError: If no log files are provided.
-
-    Returns:
-    - None: The function does not return a value, but generates and saves a report to a YAML file.
+    Output per model (under save_path):
+      - performance.yaml : list of {metric_name: value}
+      - config.yaml      : model_name, params, strategy_args
     """
     log_files: Union[List[str], pd.DataFrame] = report_config.get("log_files_list")
     if not log_files:
@@ -90,37 +83,28 @@ def report(report_config: dict) -> None:
     num_rows = leaderboard_df.shape[0]
     leaderboard_df.insert(0, "strategy_args", [log_data.iloc[0, 1]] * num_rows)
 
-    # Build clean nested YAML structure:
-    # Each row: metric_name, strategy_args, models: [{name, params, value}, ...]
-    yaml_data = []
     model_cols = [c for c in leaderboard_df.columns if c not in META_COLUMNS]
 
-    for _, row in leaderboard_df.iterrows():
-        entry = {
-            "metric_name": row["metric_name"],
-            "strategy_args": row["strategy_args"],
-        }
-        models = []
-        for col in model_cols:
-            model_name, params = _parse_model_column(col)
-            value = _sanitize_value(row[col])
-            models.append({
-                "name": model_name,
-                "params": params,
-                "value": value,
-            })
-        entry["models"] = models
-        yaml_data.append(entry)
-
-    # Ensure the file name ends with .yaml
+    save_path = report_config.get("save_path", None)
+    if save_path is None:
+        save_path = os.path.join(ROOT_PATH, "result")
     file_name = report_config["leaderboard_file_name"]
 
-    # Save to YAML file
-    if report_config.get("save_path", None) is not None:
-        save_path = report_config.get("save_path", None)
-        output_path = os.path.join(save_path, file_name)
-    else:
-        output_path = os.path.join(ROOT_PATH, "result", file_name)
+    for col in model_cols:
+        model_name, params = _parse_model_column(col)
 
-    with open(output_path, "w", encoding="utf-8") as f:
-        yaml.dump(yaml_data, f, allow_unicode=True, sort_keys=False, default_flow_style=False)
+        # performance.yaml — metric_name → value only
+        performance = {
+            row["metric_name"]: _sanitize_value(row[col])
+            for _, row in leaderboard_df.iterrows()
+        }
+
+        # config.yaml — model info + strategy (write once, not repeated per metric)
+        config = {
+            "model_name": model_name,
+            "model_params": params,
+            "strategy_args": leaderboard_df.iloc[0]["strategy_args"],
+        }
+
+        _yaml_dump(os.path.join(save_path, f"{model_name}.{file_name}.yaml"), performance)
+        _yaml_dump(os.path.join(save_path, f"{model_name}.config.yaml"), config)
