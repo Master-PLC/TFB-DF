@@ -6,6 +6,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import copy
 import logging
 import math
+import os
+import pickle
 import torch
 
 import numpy as np
@@ -16,6 +18,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from typing import Optional, Tuple
 
+from common.constant import ROOT_PATH
 from ts_benchmark.baselines.utils import EarlyStopping, adjust_learning_rate, forecasting_data_provider, train_val_split, get_time_mark
 from ts_benchmark.models.model_base import ModelBase, BatchMaker
 from ts_benchmark.utils.data_processing import split_time
@@ -41,7 +44,9 @@ DEFAULT_HYPER_PARAMS = {
     "auxi_mode": "none",
     "auxi_loss": "MAE",
     "auxi_type": "complex",
-    "module_first": True
+    "module_first": True,
+    "is_training": True,
+    "save_path": None,
 }
 
 
@@ -105,21 +110,43 @@ class DeepForecastingModelBase(ModelBase):
         """
         adjust_learning_rate(optimizer, epoch, config)
 
-    def save_checkpoint(self, model):
+    def save_checkpoint(self, checkpoint_dir: Optional[str] = None):
         """
         Save the model checkpoint.
 
         This function saves the model's state dictionary (state_dict) to be used
         for restoring the model at a later time. A deep copy of the state_dict is returned.
+        If checkpoint_dir is provided, saves to {checkpoint_dir}/{model_name}.checkpoint.pth and {checkpoint_dir}/{model_name}.scaler.pkl.
 
         Parameters:
-        - model (torch.nn.Module): The current instance of the model being trained.
-
+        - checkpoint_dir (Optional[str]): If not None, saves checkpoint and scaler in this directory.
         Returns:
-        - OrderedDict: A deep copy of the model's state_dict, which can be used to restore
-          the model's parameters in the future.
+        - OrderedDict: A deep copy of the model's state_dict.
         """
-        return copy.deepcopy(model.state_dict())
+        state = copy.deepcopy(self.model.state_dict())
+        if checkpoint_dir is not None:
+            os.makedirs(checkpoint_dir, exist_ok=True)
+            torch.save(state, os.path.join(checkpoint_dir, f"{self.model_name}.checkpoint.pth"))
+            with open(os.path.join(checkpoint_dir, f"{self.model_name}.scaler.pkl"), "wb") as f:
+                pickle.dump(self.scaler, f)
+        return state
+
+    def load_checkpoint(self, checkpoint_dir: str):
+        """
+        Load model checkpoint and scaler from disk.
+
+        :param checkpoint_dir: Directory containing checkpoint files (checkpoint.pth, scaler.pkl).
+        """
+        checkpoint_path = os.path.join(checkpoint_dir, f"{self.model_name}.checkpoint.pth")
+        scaler_path = os.path.join(checkpoint_dir, f"{self.model_name}.scaler.pkl")
+        if not os.path.exists(checkpoint_path):
+            raise FileNotFoundError(f"Checkpoint not found at {checkpoint_path}")
+        self.check_point = torch.load(checkpoint_path, map_location=get_device())
+        self.model.load_state_dict(self.check_point)
+        if os.path.exists(scaler_path):
+            with open(scaler_path, "rb") as f:
+                self.scaler = pickle.load(f)
+        logger.info("Loaded checkpoint from %s", checkpoint_path)
 
     def _init_criterion_and_optimizer(self):
         """
@@ -422,7 +449,12 @@ class DeepForecastingModelBase(ModelBase):
         **kwargs,
     ) -> "ModelBase":
         """
-        Train the model.
+        Train the model or load a pre-trained checkpoint.
+
+        When config.is_training is True (default), performs full training.
+        When config.is_training is False, loads checkpoint from config.checkpoint_dir
+        and skips training entirely.
+
         :param train_valid_data: Time series data used for training and validation.
         :param covariates: Additional external variables.
         :param train_ratio_in_tv: Represents the splitting ratio of the training set validation set. If it is equal to 1, it means that the validation set is not partitioned.
@@ -452,6 +484,20 @@ class DeepForecastingModelBase(ModelBase):
             self.model_name,
         )
         config = self.config
+
+        # Derive checkpoint directory from save_path + model_name
+        save_path = getattr(config, "save_path", None)
+        checkpoint_dir = save_path if save_path is not None else os.path.join(ROOT_PATH, "results")
+
+        # ---- Not training mode: load checkpoint and return early ----
+        is_training = getattr(config, "is_training", True)
+        if not is_training:
+            self.model.to(get_device())
+            self.load_checkpoint(checkpoint_dir)
+            print("Skipping training, checkpoint loaded from:", checkpoint_dir)
+            return self
+        # ---- End of not-training branch ----
+
         train_data, valid_data = train_val_split(
             train_valid_data, train_ratio_in_tv, config.seq_len
         )
@@ -565,7 +611,7 @@ class DeepForecastingModelBase(ModelBase):
                 valid_loss = self.validate(valid_data_loader, series_dim, criterion)
                 improved = self.early_stopping(valid_loss, self.model)
                 if improved:
-                    self.check_point = self.save_checkpoint(self.model)
+                    self.check_point = self.save_checkpoint(checkpoint_dir=checkpoint_dir)
                 if self.early_stopping.early_stop:
                     break
 

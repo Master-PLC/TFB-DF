@@ -76,15 +76,17 @@ def build_model_config(args: argparse.Namespace, config_data: Dict) -> Dict:
     for adapter, model_name, model_hyper_params in zip(
         args.adapter, args.model_name, args.model_hyper_params
     ):
+        hyper_params_dict = (
+            json.loads(model_hyper_params) if model_hyper_params is not None else {}
+        )
+        # Inject save_path so the model knows where to save/load checkpoints
+        if args.save_path is not None:
+            hyper_params_dict["save_path"] = args.save_path
         model_config["models"].append(
             {
                 "adapter": adapter,
                 "model_name": model_name,
-                "model_hyper_params": (
-                    json.loads(model_hyper_params)
-                    if model_hyper_params is not None
-                    else {}
-                ),
+                "model_hyper_params": hyper_params_dict,
             }
         )
 
