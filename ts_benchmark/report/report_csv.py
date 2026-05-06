@@ -83,14 +83,14 @@ def report(report_config: dict) -> None:
             row["metric_name"]: _sanitize_value(row[col])
             for _, row in leaderboard_df.iterrows()
         }
-        performance_df = pd.DataFrame(performance.items(), columns=["key", "value"])
+        performance_df = pd.DataFrame(performance, index=0)
 
         # config.csv — flattened key-value pairs
         config_items = {"model_name": model_name}
         strategy_args = json.loads(leaderboard_df.iloc[0]["strategy_args"])
         config_items.update(params)
         config_items.update(strategy_args)
-        config_df = pd.DataFrame(config_items.items(), columns=["key", "value"])
+        config_df = pd.DataFrame(config_items, index=0)
 
         performance_df.to_csv(os.path.join(save_path, f"{model_name}.{file_name}"), index=False)
         config_df.to_csv(os.path.join(save_path, f"{model_name}.config.csv"), index=False)
