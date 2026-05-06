@@ -24,7 +24,7 @@ ARTIFACT_COLUMNS = [
 META_COLUMNS = {"metric_name", "strategy_args"}
 
 
-def report(report_config: dict) -> None:
+def report(report_config: dict, simpler_save_name: bool = False) -> None:
     """
     Generate per-model CSV reports: performance.csv + config.csv for each model.
 
@@ -36,6 +36,7 @@ def report(report_config: dict) -> None:
         - report_metrics (Union[str, List[str]]): The metrics for the report, can be a string or a list of strings.
         - fill_type (str): The type of fill for missing values.
         - null_value_threshold (float): The threshold value for null metrics.
+    - simpler_save_name (bool): Whether to use simpler file names for the output CSV files.
 
     Raises:
     - ValueError: If no log files are provided.
@@ -92,5 +93,5 @@ def report(report_config: dict) -> None:
         config_items.update(strategy_args)
         config_df = pd.DataFrame([config_items])
 
-        performance_df.to_csv(os.path.join(save_path, f"{model_name}.{file_name}"), index=False)
-        config_df.to_csv(os.path.join(save_path, f"{model_name}.config.csv"), index=False)
+        performance_df.to_csv(os.path.join(save_path, f"{model_name}.{file_name}" if not simpler_save_name else "performance.csv"), index=False)
+        config_df.to_csv(os.path.join(save_path, f"{model_name}.config.csv" if not simpler_save_name else "config.csv"), index=False)

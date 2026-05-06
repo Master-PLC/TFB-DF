@@ -24,12 +24,13 @@ ARTIFACT_COLUMNS = [
 META_COLUMNS = {"metric_name", "strategy_args"}
 
 
-def report(report_config: dict) -> None:
+def report(report_config: dict, simpler_save_name: bool = False) -> None:
     """
     Generate per-model YAML reports: performance.yaml + config.yaml for each model.
 
     Parameters:
     - report_config (dict): see report_csv.report for full spec.
+    - simpler_save_name (bool): Whether to use simpler file names for the output YAML files.
 
     Output per model (under save_path):
       - {model_name}.performance.yaml : columns: metric_name, value
@@ -78,5 +79,5 @@ def report(report_config: dict) -> None:
         config.update(params)
         config.update(strategy_args)
 
-        _yaml_dump(os.path.join(save_path, f"{model_name}.{file_name}"), performance)
-        _yaml_dump(os.path.join(save_path, f"{model_name}.config.yaml"), config)
+        _yaml_dump(os.path.join(save_path, f"{model_name}.{file_name}" if not simpler_save_name else "performance.yaml"), performance)
+        _yaml_dump(os.path.join(save_path, f"{model_name}.config.yaml" if not simpler_save_name else "config.yaml"), config)

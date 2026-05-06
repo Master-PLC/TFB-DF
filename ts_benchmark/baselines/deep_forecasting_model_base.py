@@ -89,6 +89,7 @@ class DeepForecastingModelBase(ModelBase):
         self.scaler = StandardScaler()
         self.seq_len = self.config.seq_len
         self.win_size = self.config.seq_len
+        self.simpler_save_name = getattr(self.config, "simpler_save_name", False)
         self.check_point = None
 
     def _init_model(self):
@@ -131,8 +132,10 @@ class DeepForecastingModelBase(ModelBase):
         state = copy.deepcopy(self.model.state_dict())
         if checkpoint_dir is not None:
             os.makedirs(checkpoint_dir, exist_ok=True)
-            torch.save(state, os.path.join(checkpoint_dir, f"{self.model_name}.checkpoint.pth"))
-            with open(os.path.join(checkpoint_dir, f"{self.model_name}.scaler.pkl"), "wb") as f:
+            checkpoint_path = os.path.join(checkpoint_dir, f"{self.model_name}.checkpoint.pth" if not self.simpler_save_name else "checkpoint.pth")
+            scaler_path = os.path.join(checkpoint_dir, f"{self.model_name}.scaler.pkl" if not self.simpler_save_name else "scaler.pkl")
+            torch.save(state, checkpoint_path)
+            with open(scaler_path, "wb") as f:
                 pickle.dump(self.scaler, f)
         return state
 
@@ -142,8 +145,8 @@ class DeepForecastingModelBase(ModelBase):
 
         :param checkpoint_dir: Directory containing checkpoint files (checkpoint.pth, scaler.pkl).
         """
-        checkpoint_path = os.path.join(checkpoint_dir, f"{self.model_name}.checkpoint.pth")
-        scaler_path = os.path.join(checkpoint_dir, f"{self.model_name}.scaler.pkl")
+        checkpoint_path = os.path.join(checkpoint_dir, f"{self.model_name}.checkpoint.pth" if not self.simpler_save_name else "checkpoint.pth")
+        scaler_path = os.path.join(checkpoint_dir, f"{self.model_name}.scaler.pkl" if not self.simpler_save_name else "scaler.pkl")
         if not os.path.exists(checkpoint_path):
             raise FileNotFoundError(f"Checkpoint not found at {checkpoint_path}")
         self.check_point = torch.load(checkpoint_path, map_location=get_device())
@@ -189,7 +192,7 @@ class DeepForecastingModelBase(ModelBase):
         """
         Initializes the writer for logging training metrics.
         """
-        return LocalBufferWriter(log_dir)
+        return LocalBufferWriter(log_dir, self.model_name if not self.simpler_save_name else "")
 
     def _compute_auxi_loss(self, outputs: torch.Tensor, batch_y: torch.Tensor) -> torch.Tensor:
         """

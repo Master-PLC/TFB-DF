@@ -157,8 +157,9 @@ class EarlyStopping:
 
 
 class LocalBufferWriter:
-    def __init__(self, log_dir):
+    def __init__(self, log_dir, prefix=''):
         self.log_dir = log_dir
+        self.prefix = prefix
         # 数据结构: { 'scalars': {...}, 'figures': {...} }
         self.data = {
             'scalars': {},
@@ -199,7 +200,8 @@ class LocalBufferWriter:
 
     def close(self):
         os.makedirs(self.log_dir, exist_ok=True)
-        file_path = os.path.join(self.log_dir, 'events.pth')
+        save_name = f'{self.prefix}.events.pth' if self.prefix else 'events.pth'
+        file_path = os.path.join(self.log_dir, save_name)
         torch.save(self.data, file_path)
 
 

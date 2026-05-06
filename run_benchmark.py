@@ -82,6 +82,7 @@ def build_model_config(args: argparse.Namespace, config_data: Dict) -> Dict:
         # Inject save_path so the model knows where to save/load checkpoints
         if args.save_path is not None:
             hyper_params_dict["save_path"] = args.save_path
+        hyper_params_dict["simpler_save_name"] = args.simpler_save_name
         model_config["models"].append(
             {
                 "adapter": adapter,
@@ -203,6 +204,9 @@ if __name__ == "__main__":
         if config_data.get(config_name) is None:
             raise ValueError(f"{config_name} is none")
 
+    if args.simpler_save_name and (len(args.data_name_list) > 1 or len(args.model_name) > 1):
+        raise ValueError("Using simpler save name may cause confusion when evaluating multiple models or datasets, please set simpler_save_name to False to include more detailed information in the saved file name.")
+
     data_config = build_data_config(args, config_data)
     model_config = build_model_config(args, config_data)
     evaluation_config = build_evaluation_config(args, config_data)
@@ -232,6 +236,6 @@ if __name__ == "__main__":
     report_config["log_files_list"] = log_filenames
     if args.report_method in ["csv", "yaml"]:
         filename = get_unique_file_suffix(suffix=args.report_method)
-        leaderboard_file_name = f"test_report{filename}" if not args.simpler_save_name else f"performance.{args.report_method}"
+        leaderboard_file_name = f"test_report{filename}"
         report_config["leaderboard_file_name"] = leaderboard_file_name
-    report(report_config, report_method=args.report_method)
+    report(report_config, report_method=args.report_method, simpler_save_name=args.simpler_save_name)
